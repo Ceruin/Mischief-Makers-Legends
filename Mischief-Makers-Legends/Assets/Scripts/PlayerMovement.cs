@@ -38,24 +38,39 @@ public class PlayerMovement : MonoBehaviour
     {
         Move();
     }
-    private Vector3 previousMoveDirection;
+
+    public float turnSpeed = 10f; // the speed of turning left/right
+    public float backwardSpeedRatio = 0.5f; // the speed ratio of moving backwards compared to forwards
+
     private void Move()
     {
-        Vector3 moveDirection = new Vector3(moveInput.x, 0f, moveInput.y) * moveSpeed;
+        Vector3 moveDirection = new Vector3(moveInput.x, 0f, moveInput.y);
+
+        // check if moving backwards
+        bool isBackward = moveDirection.z < 0;
+
         if (moveDirection != Vector3.zero)
         {
-            previousMoveDirection = moveDirection;
+            // Transform move direction to world space using the player's rotation
+            moveDirection = transform.TransformDirection(moveDirection);
+
+            // calculate the speed based on the direction
+            float speed = moveSpeed * (isBackward ? backwardSpeedRatio : 1f);
+
+            // apply the speed to the move direction
+            moveDirection *= speed;
+
+            // calculate the target rotation based on the move direction
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-            transform.rotation = Quaternion.Euler(0f, targetRotation.eulerAngles.y, 0f);
-        }
-        else
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(previousMoveDirection);
-            transform.rotation = Quaternion.Euler(0f, targetRotation.eulerAngles.y, 0f);
+
+            // slowly rotate towards the target rotation
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, turnSpeed * Time.fixedDeltaTime);
         }
 
         rb.velocity = new Vector3(moveDirection.x, rb.velocity.y, moveDirection.z);
     }
+
+
 
     public void OnMovementInput(InputAction.CallbackContext context)
     {

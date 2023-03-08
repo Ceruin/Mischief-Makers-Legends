@@ -719,6 +719,7 @@ MonoBehaviour:
   dashDistance: 10
   dashDuration: 0.2
   dashCooldown: 0.25
+  rotationSpeed: 5
 --- !u!54 &738445533
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -733,7 +734,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 80
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!1 &963194225
 GameObject:
@@ -812,8 +813,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.12174715, y: 0.19505872, z: -0.024409343, w: 0.97289973}
-  m_LocalPosition: {x: -4.17, y: 4.24, z: -3.54}
+  m_LocalRotation: {x: 0.14202268, y: 0.023880664, z: -0.003427345, w: 0.98956937}
+  m_LocalPosition: {x: -1.88, y: 4.24, z: -4.500001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -885,6 +886,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   virtualCamera: {fileID: 0}
+  cameraSensitivity: 10
 --- !u!114 &1660767969
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -903,8 +905,8 @@ MonoBehaviour:
   m_StreamingVersion: 20170927
   m_Priority: 10
   m_StandbyUpdate: 2
-  m_LookAt: {fileID: 0}
-  m_Follow: {fileID: 0}
+  m_LookAt: {fileID: 738445530}
+  m_Follow: {fileID: 738445530}
   m_Lens:
     FieldOfView: 60
     OrthographicSize: 5
@@ -930,8 +932,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1660767967}
-  m_LocalRotation: {x: 0.12174715, y: 0.19505872, z: -0.024409343, w: 0.97289973}
-  m_LocalPosition: {x: -4.17, y: 4.24, z: -3.54}
+  m_LocalRotation: {x: 0.14202268, y: 0.023880664, z: -0.003427345, w: 0.98956937}
+  m_LocalPosition: {x: -1.88, y: 4.24, z: -4.500001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
