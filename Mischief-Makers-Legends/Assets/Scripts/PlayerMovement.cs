@@ -1,25 +1,21 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Collections;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float jumpHeight = 1f;
-    [SerializeField] private float dashDistance = 5f;
-    [SerializeField] private float dashDuration = 0.2f;
-    [SerializeField] private float dashCooldown = 1f;
-
-    private Rigidbody rb;
-    private Vector2 moveInput;
-    private bool isGrounded;
-    private Vector3 moveDirection;
-    private float lastDashTime = -Mathf.Infinity;
-
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
     }
+
+    public float moveSpeed = 10f;
+    public float rotationSpeed = 360f;
+    public Transform playerModel;
+    private Vector2 moveInput;
+    private Rigidbody rb;
+    private Vector2 movementInput;
+    private Vector3 movement;
 
     private void Start()
     {
@@ -33,7 +29,6 @@ public class PlayerMovement : MonoBehaviour
         actions.Enable();
     }
 
-
     private void FixedUpdate()
     {
         Move();
@@ -44,33 +39,90 @@ public class PlayerMovement : MonoBehaviour
 
     private void Move()
     {
-        Vector3 moveDirection = new Vector3(moveInput.x, 0f, moveInput.y);
+        movement = new Vector3(moveInput.x, 0f, moveInput.y);
 
-        // check if moving backwards
-        bool isBackward = moveDirection.z < 0;
+        // Move the player using Rigidbody
+        rb.velocity = new Vector3(movement.x * moveSpeed, rb.velocity.y, movement.z * moveSpeed);
 
-        if (moveDirection != Vector3.zero)
+        // Rotate the player model based on movement direction
+        if (movement != Vector3.zero)
         {
-            // Transform move direction to world space using the player's rotation
-            moveDirection = transform.TransformDirection(moveDirection);
-
-            // calculate the speed based on the direction
-            float speed = moveSpeed * (isBackward ? backwardSpeedRatio : 1f);
-
-            // apply the speed to the move direction
-            moveDirection *= speed;
-
-            // calculate the target rotation based on the move direction
-            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-
-            // slowly rotate towards the target rotation
-            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, turnSpeed * Time.fixedDeltaTime);
+            Quaternion targetRotation = Quaternion.LookRotation(movement, Vector3.up);
+            playerModel.rotation = Quaternion.RotateTowards(playerModel.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
         }
-
-        rb.velocity = new Vector3(moveDirection.x, rb.velocity.y, moveDirection.z);
     }
 
+    public float groundDashSpeed = 20f;
+    public float airDashSpeed = 15f;
+    public float dashDuration = 0.2f;
+    public float dashCooldown = 0.5f;
 
+    private bool isDashing = false;
+    private float timeSinceLastDash = 0f;
+
+    private IEnumerator Dash(Vector3 dashDirection)
+    {
+        if (isDashing || Time.time - timeSinceLastDash < dashCooldown) yield break;
+
+        isDashing = true;
+        timeSinceLastDash = Time.time;
+
+        float dashEndTime = Time.time + dashDuration;
+        float currentDashSpeed = IsGrounded() ? groundDashSpeed : airDashSpeed;
+
+        while (Time.time < dashEndTime)
+        {
+            rb.velocity = new Vector3(dashDirection.x * currentDashSpeed, dashDirection.y * currentDashSpeed, dashDirection.z * currentDashSpeed);
+            yield return null;
+        }
+
+        isDashing = false;
+    }
+
+    public float grabDistance = 2f;
+    public float throwForce = 10f;
+
+    private GameObject grabbedObject;
+
+    private void GrabObject()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(playerModel.position, playerModel.forward, out hit, grabDistance) && hit.collider.gameObject.layer == LayerMask.NameToLayer("Grabbable"))
+        {
+            grabbedObject = hit.collider.gameObject;
+            grabbedObject.transform.SetParent(playerModel);
+            grabbedObject.GetComponent<Rigidbody>().isKinematic = true;
+        }
+    }
+
+    private void ReleaseObject()
+    {
+        if (grabbedObject == null) return;
+
+        grabbedObject.transform.SetParent(null);
+        var rbObj = grabbedObject.GetComponent<Rigidbody>();
+        rbObj.isKinematic = false;
+        rbObj.velocity = playerModel.forward * throwForce;
+        grabbedObject = null;
+    }
+
+    public float shakeDuration = 1f;
+    public float shakeAngle = 15f;
+    public float shakeSpeed = 50f;
+
+    private IEnumerator ShakeObject()
+    {
+        if (grabbedObject == null) yield break;
+
+        float shakeEndTime = Time.time + shakeDuration;
+        float direction = 1;
+        while (Time.time < shakeEndTime)
+        {
+            grabbedObject.transform.Rotate(0, 0, shakeAngle * direction * Time.deltaTime * shakeSpeed);
+            direction = -direction;
+            yield return new WaitForSeconds(0.05f);
+        }
+    }
 
     public void OnMovementInput(InputAction.CallbackContext context)
     {
@@ -82,28 +134,33 @@ public class PlayerMovement : MonoBehaviour
         moveInput = Vector2.zero;
     }
 
+    public LayerMask groundLayer;
+
+    public float groundCheckDistance = 0.2f;
+    public Vector3 groundCheckOffset = new Vector3(0, -1, 0);
+
+    private bool IsGrounded()
+    {
+        Vector3 checkPosition = transform.position + groundCheckOffset;
+        return Physics.CheckSphere(checkPosition, groundCheckDistance, groundLayer);
+    }
+
+
+    public float jumpForce = 10f;
+
+    private void Jump()
+    {
+        if (IsGrounded())
+        {
+            rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
+        }
+    }
+
     public void OnJumpInput(InputAction.CallbackContext context)
     {
-        if (context.performed && isGrounded)
+        if (context.performed)
         {
-            rb.AddForce(Vector3.up * jumpHeight, ForceMode.Impulse);
-            isGrounded = false;
-        }
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = true;
-        }
-    }
-
-    private void OnCollisionExit(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = false;
+            Jump();
         }
     }
 
@@ -111,13 +168,8 @@ public class PlayerMovement : MonoBehaviour
     {
         if (context.performed)
         {
-            if (Time.time > lastDashTime + dashCooldown)
-            {
-                lastDashTime = Time.time;
-                Vector3 dashDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
-                Vector3 dashForce = dashDirection * dashDistance / dashDuration;
-                rb.AddForce(dashForce, ForceMode.VelocityChange);
-            }
+            Vector3 dashDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
+            Dash(dashDirection);
         }
     }
 }

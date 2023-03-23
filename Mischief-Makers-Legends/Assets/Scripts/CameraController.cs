@@ -5,34 +5,43 @@ using Cinemachine;
 public class CameraController : MonoBehaviour
 {
     [SerializeField] private CinemachineVirtualCamera virtualCamera;
-    private float rotationSpeed = 1f;
-    public float cameraSensitivity = 10f;
+    [SerializeField] private float rotationSpeed = 1f;
+    [SerializeField] private float cameraSensitivity = 10f;
 
     private void Start()
     {
         virtualCamera = GetComponent<CinemachineVirtualCamera>();
 
-        PlayerActions rotateAction = new PlayerActions();
-        rotateAction.Movement.Rotate.performed += OnRotateAction;
-        rotateAction.Enable();
+        PlayerActions playerActions = new PlayerActions();
+        playerActions.Movement.Rotate.performed += OnRotateAction;
+        playerActions.Enable();
 
         Cursor.lockState = CursorLockMode.Locked;
     }
 
     private void Update()
     {
-        //virtualCamera.transform.rotation = virtualCamera.target.rotation;
+        // No need to do anything here
     }
 
     private void OnRotateAction(InputAction.CallbackContext context)
     {
-        //// Get the input vector
-        //Vector2 input = context.ReadValue<Vector2>();
-        //Debug.Log(input);
+        Vector2 input = context.ReadValue<Vector2>();
 
-        //input = input * cameraSensitivity;
+        // Multiply the input by the camera sensitivity
+        input *= cameraSensitivity;
 
-        //transform.Rotate(Vector3.up, input.x, Space.World);
-        //transform.Rotate(Vector3.right, input.y, Space.World);
+        // Rotate the camera horizontally and vertically around the player
+        var brain = virtualCamera;
+        if (brain != null)
+        {
+            var vcam = brain.VirtualCameraGameObject.GetComponent<CinemachineFreeLook>();
+            if (vcam != null)
+            {
+                // Rotate the camera horizontally and vertically around the player
+                vcam.m_XAxis.Value += input.x * rotationSpeed;
+                vcam.m_YAxis.Value += input.y * rotationSpeed;
+            }
+        }
     }
 }
