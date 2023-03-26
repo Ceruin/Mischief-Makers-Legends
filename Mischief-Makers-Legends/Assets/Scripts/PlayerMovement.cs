@@ -127,7 +127,7 @@ public class PlayerMovement : MonoBehaviour
     public void OnMovementInput(InputAction.CallbackContext context)
     {
         moveInput = context.ReadValue<Vector2>();
-    }
+    }          
 
     public void OnMovementInputCanceled(InputAction.CallbackContext context)
     {
