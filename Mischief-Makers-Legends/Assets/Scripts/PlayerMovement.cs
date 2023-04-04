@@ -30,7 +30,7 @@ public class PlayerMovement : MonoBehaviour
     public float shakeSpeed = 50f;
     public float throwForce = 10f;
     public float turnSpeed = 10f;
-
+    public float maxVerticalDashVelocity = 5f;
     private bool isDashing = false; // Is the player currently dashing
     private float currentFuel;
     private GameObject grabbedObject;
@@ -41,7 +41,7 @@ public class PlayerMovement : MonoBehaviour
     private float timeSinceLastHover = 0f;
     private float timeSinceLastJump;
 
-    private IEnumerator Dash(Vector3 dashDirection)
+    private IEnumerator Dash(Vector3 dashVelocity)
     {
         if (isDashing || Time.time - timeSinceLastDash < dashCooldown) yield break;
 
@@ -49,7 +49,7 @@ public class PlayerMovement : MonoBehaviour
         timeSinceLastDash = Time.time;
 
         float dashEndTime = Time.time + dashDuration;
-        rb.AddForce(dashDirection * dashForce, ForceMode.VelocityChange);
+        rb.AddForce(dashVelocity, ForceMode.VelocityChange);
 
         while (Time.time < dashEndTime)
         {
@@ -59,12 +59,17 @@ public class PlayerMovement : MonoBehaviour
         isDashing = false;
     }
 
+    public float dashDistance = 5f;
+
     public void OnDashInput(InputAction.CallbackContext context)
     {
         if (context.performed)
         {
-            Vector3 dashDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
-            StartCoroutine(Dash(dashDirection));
+            Vector3 horizontalDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
+            float verticalDirection = Mathf.Min(rb.velocity.y, maxVerticalDashVelocity);
+            verticalDirection = verticalDirection > 0f ? verticalDirection : 0f;
+            Vector3 dashDirection = horizontalDirection + new Vector3(0f, verticalDirection, 0f);
+            StartCoroutine(Dash(dashDirection.normalized * dashDistance));
         }
     }
 
