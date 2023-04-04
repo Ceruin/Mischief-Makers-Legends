@@ -457,6 +457,7 @@ GameObject:
   - component: {fileID: 673099219}
   - component: {fileID: 673099218}
   - component: {fileID: 673099220}
+  - component: {fileID: 673099221}
   m_Layer: 0
   m_Name: Body
   m_TagString: Untagged
@@ -541,6 +542,19 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!65 &673099221
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 673099216}
+  m_Material: {fileID: 13400000, guid: 514574bd2070604418b40b4dc5930ad5, type: 2}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1.1, y: 1, z: 1.1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &705507993
 GameObject:
@@ -778,26 +792,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb4383cc752e0a940b774577f2ed22d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 7
-  rotationSpeed: 360
-  turnSpeed: 10
+  airHoverSpeed: 15
   backwardSpeedRatio: 0.5
-  groundDashSpeed: 20
-  airDashSpeed: 15
+  dashForce: 30
   dashDuration: 0.2
   dashCooldown: 0.25
+  dashDistanceMultiplier: 2
+  fuelConsumptionRate: 1
+  fuelRegenerationRate: 0.5
   grabDistance: 2
-  throwForce: 10
-  shakeDuration: 1
-  shakeAngle: 15
-  shakeSpeed: 50
-  jumpForce: 10
+  groundCheckDistance: 0.2
+  groundCheckOffset: {x: 0, y: -1, z: 0}
+  groundHoverSpeed: 20
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  groundCheckDistance: 0.2
-  groundCheckOffset: {x: 0, y: -1, z: 0}
+  hoverDuration: 0.2
+  hoverForce: 15
+  jumpForce: 10
+  jumpHoverDelay: 0.5
+  maxFuel: 3
+  moveSpeed: 7
   playerModel: {fileID: 673099217}
+  rotationSpeed: 360
+  shakeAngle: 15
+  shakeDuration: 1
+  shakeSpeed: 50
+  throwForce: 10
+  turnSpeed: 10
 --- !u!54 &738445533
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -813,7 +835,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
