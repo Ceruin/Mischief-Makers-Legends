@@ -159,13 +159,20 @@ public class PlayerMovement : MonoBehaviour
 
     private void Move()
     {
-        Vector3 movement = new Vector3(moveInput.x, 0f, moveInput.y);
+        Vector3 moveDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
+        Vector3 cameraForward = Camera.main.transform.forward;
+        cameraForward.y = 0;
+        cameraForward.Normalize();
+        Vector3 cameraRight = Camera.main.transform.right;
+        cameraRight.y = 0;
+        cameraRight.Normalize();
 
-        rb.velocity = new Vector3(movement.x * moveSpeed, rb.velocity.y, movement.z * moveSpeed);
+        Vector3 desiredDirection = cameraForward * moveDirection.z + cameraRight * moveDirection.x;
+        rb.velocity = new Vector3(desiredDirection.x * moveSpeed, rb.velocity.y, desiredDirection.z * moveSpeed);
 
-        if (movement != Vector3.zero)
+        if (desiredDirection != Vector3.zero)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(movement, Vector3.up);
+            Quaternion targetRotation = Quaternion.LookRotation(desiredDirection, Vector3.up);
             playerModel.rotation = Quaternion.RotateTowards(playerModel.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
         }
     }
