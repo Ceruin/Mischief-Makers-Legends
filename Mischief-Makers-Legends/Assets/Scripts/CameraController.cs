@@ -1,18 +1,20 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Cinemachine;
+using static UnityEngine.InputSystem.DefaultInputActions;
 
 public class CameraController : MonoBehaviour
 {
     [SerializeField] private CinemachineVirtualCamera virtualCamera;
+    [SerializeField] private Transform player;
     [SerializeField] private float rotationSpeed = 1f;
     [SerializeField] private float cameraSensitivity = 10f;
 
-    private void Start()
-    {
-        virtualCamera = GetComponent<CinemachineVirtualCamera>();
+    private PlayerActions playerActions;
 
-        PlayerActions playerActions = new PlayerActions();
+    private void Awake()
+    {
+        playerActions = new PlayerActions();
         playerActions.Movement.Rotate.performed += OnRotateAction;
         playerActions.Enable();
 
@@ -27,21 +29,38 @@ public class CameraController : MonoBehaviour
     private void OnRotateAction(InputAction.CallbackContext context)
     {
         Vector2 input = context.ReadValue<Vector2>();
+        Debug.Log($"OnRotateAction: input: {input}");
 
         // Multiply the input by the camera sensitivity
         input *= cameraSensitivity;
 
-        // Rotate the camera horizontally and vertically around the player
-        var brain = virtualCamera;
-        if (brain != null)
+        if (virtualCamera != null && player != null)
         {
-            var vcam = brain.VirtualCameraGameObject.GetComponent<CinemachineFreeLook>();
-            if (vcam != null)
+            Debug.Log("OnRotateAction: virtualCamera and player found");
+
+            player.transform.rotation *= Quaternion.AngleAxis(input.y * rotationSpeed, Vector3.right);
+            var angles = player.transform.localEulerAngles;
+            angles.z = 0;
+            var angle = player.transform.localEulerAngles.x;
+            if (angle > 180 && angle < 340)
             {
-                // Rotate the camera horizontally and vertically around the player
-                vcam.m_XAxis.Value += input.x * rotationSpeed;
-                vcam.m_YAxis.Value += input.y * rotationSpeed;
+                angles.x = 340;
             }
+            else if (angle < 180 && angle > 40)
+            {
+                angles.x = 40;
+            }
+
+            player.transform.localEulerAngles = angles;
         }
+        else
+        {
+            Debug.LogError("OnRotateAction: virtualCamera or player not found");
+        }
+    }
+
+    private void OnDestroy()
+    {
+        playerActions.Disable();
     }
 }
