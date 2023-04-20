@@ -23,8 +23,10 @@ public class PlayerMovement : MonoBehaviour
     public float jumpHoverDelay = 0.5f;
     public float maxFuel = 3f; // Maximum fuel for the jetpack
     public float moveSpeed = 10f;
-    public Transform playerModel;
+
+    //public Transform playerModel;
     public float rotationSpeed = 360f;
+
     public float shakeAngle = 15f;
     public float shakeDuration = 1f;
     public float shakeSpeed = 50f;
@@ -115,10 +117,10 @@ public class PlayerMovement : MonoBehaviour
     private void GrabObject()
     {
         RaycastHit hit;
-        if (Physics.Raycast(playerModel.position, playerModel.forward, out hit, grabDistance) && hit.collider.gameObject.layer == LayerMask.NameToLayer("Grabbable"))
+        if (Physics.Raycast(rb.position, rb.transform.forward, out hit, grabDistance) && hit.collider.gameObject.layer == LayerMask.NameToLayer("Grabbable"))
         {
             grabbedObject = hit.collider.gameObject;
-            grabbedObject.transform.SetParent(playerModel);
+            grabbedObject.transform.SetParent(rb.transform);
             grabbedObject.GetComponent<Rigidbody>().isKinematic = true;
         }
     }
@@ -173,7 +175,7 @@ public class PlayerMovement : MonoBehaviour
         if (desiredDirection != Vector3.zero)
         {
             Quaternion targetRotation = Quaternion.LookRotation(desiredDirection, Vector3.up);
-            playerModel.rotation = Quaternion.RotateTowards(playerModel.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
+            rb.MoveRotation(Quaternion.RotateTowards(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
         }
     }
 
@@ -193,7 +195,7 @@ public class PlayerMovement : MonoBehaviour
         grabbedObject.transform.SetParent(null);
         Rigidbody rbObj = grabbedObject.GetComponent<Rigidbody>();
         rbObj.isKinematic = false;
-        rbObj.velocity = playerModel.forward * throwForce;
+        rbObj.velocity = rb.transform.forward * throwForce;
         grabbedObject = null;
     }
 
@@ -225,14 +227,15 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        //Rotate();
         if (IsGrounded())
         {
-            playerModel.GetComponent<Renderer>().material.color = Color.green;
+            GetComponent<Renderer>().material.color = Color.green;
             RegenerateFuel();
         }
         else
         {
-            playerModel.GetComponent<Renderer>().material.color = Color.red;
+            GetComponent<Renderer>().material.color = Color.red;
         }
     }
 }
