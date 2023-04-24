@@ -247,16 +247,6 @@ public class PlayerMovement : MonoBehaviour
         {
             Quaternion targetRotation = Quaternion.LookRotation(desiredDirection.normalized, Vector3.up);
             rb.MoveRotation(Quaternion.RotateTowards(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
-            //rb.MoveRotation(Quaternion.LookRotation(desiredDirection));
-
-            //Quaternion targetRotation = Quaternion.LookRotation(desiredDirection.normalized, Vector3.up);
-            //var diferenceRotation = targetRotation.eulerAngles.y - transform.eulerAngles.y;
-            //var eulerY = transform.eulerAngles.y;
-
-            //if (diferenceRotation < 0 || diferenceRotation > 0) eulerY = targetRotation.eulerAngles.y;
-            //var euler = new Vector3(0, eulerY, 0);
-
-            //transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(euler), turnSpeed * rotationSpeed * Time.deltaTime);
         }
     }
 
