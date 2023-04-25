@@ -241,8 +241,16 @@ public class PlayerMovement : MonoBehaviour
         cameraRight.Normalize();
 
         Vector3 desiredDirection = cameraForward * moveDirection.z + cameraRight * moveDirection.x;
-        rb.velocity = new Vector3(desiredDirection.x * moveSpeed, rb.velocity.y, desiredDirection.z * moveSpeed);
+        Vector3 force = desiredDirection * moveSpeed;
 
+        // Calculate the force to be applied
+        Vector3 forceToApply = force - rb.velocity;
+        forceToApply.y = 0;
+
+        // Apply the force to the Rigidbody
+        rb.AddForce(forceToApply, ForceMode.VelocityChange);
+
+        // Update the rotation
         if (desiredDirection != Vector3.zero && desiredDirection.magnitude > 0.1f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(desiredDirection.normalized, Vector3.up);
