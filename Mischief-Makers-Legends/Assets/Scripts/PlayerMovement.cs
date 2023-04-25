@@ -241,7 +241,8 @@ public class PlayerMovement : MonoBehaviour
         cameraRight.Normalize();
 
         Vector3 desiredDirection = cameraForward * moveDirection.z + cameraRight * moveDirection.x;
-        rb.velocity = new Vector3(desiredDirection.x * moveSpeed, rb.velocity.y, desiredDirection.z * moveSpeed);
+        rb.AddForce(desiredDirection * moveSpeed, ForceMode.VelocityChange);
+        //rb.velocity = new Vector3(desiredDirection.x * moveSpeed, rb.velocity.y, desiredDirection.z * moveSpeed);
 
         if (desiredDirection != Vector3.zero && desiredDirection.magnitude > 0.1f)
         {
