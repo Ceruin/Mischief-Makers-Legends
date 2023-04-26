@@ -104,14 +104,14 @@ public class PlayerMovement : MonoBehaviour
         moveInput = Vector2.zero;
     }
 
-    // cinemachine
-    private float _cinemachineTargetYaw;
+    //// cinemachine
+    //private float _cinemachineTargetYaw;
 
-    private float _cinemachineTargetPitch;
+    //private float _cinemachineTargetPitch;
 
     private void Awake()
     {
-        _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
+        //_cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
 
         rb = GetComponent<Rigidbody>();
         currentFuel = maxFuel;
@@ -167,17 +167,17 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private bool IsCurrentDeviceMouse
-    {
-        get
-        {
-#if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
-                return _playerInput.currentControlScheme == "KeyboardMouse";
-#else
-            return false;
-#endif
-        }
-    }
+    //    private bool IsCurrentDeviceMouse
+    //    {
+    //        get
+    //        {
+    //#if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
+    //                return _playerInput.currentControlScheme == "KeyboardMouse";
+    //#else
+    //            return false;
+    //#endif
+    //        }
+    //    }
 
     private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
     {
@@ -186,53 +186,53 @@ public class PlayerMovement : MonoBehaviour
         return Mathf.Clamp(lfAngle, lfMin, lfMax);
     }
 
-    [Tooltip("How far in degrees can you move the camera up")]
-    public float TopClamp = 70.0f;
+    //[Tooltip("How far in degrees can you move the camera up")]
+    //public float TopClamp = 70.0f;
 
-    [Tooltip("Additional degress to override the camera. Useful for fine tuning camera position when locked")]
-    public float CameraAngleOverride = 0.0f;
+    //[Tooltip("Additional degress to override the camera. Useful for fine tuning camera position when locked")]
+    //public float CameraAngleOverride = 0.0f;
 
-    [Header("Cinemachine")]
-    [Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
-    public GameObject CinemachineCameraTarget;
+    //[Header("Cinemachine")]
+    //[Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
+    //public GameObject CinemachineCameraTarget;
 
-    [Tooltip("How far in degrees can you move the camera down")]
-    public float BottomClamp = -30.0f;
+    //[Tooltip("How far in degrees can you move the camera down")]
+    //public float BottomClamp = -30.0f;
 
-    [Tooltip("For locking the camera position on all axis")]
-    public bool LockCameraPosition = false;
+    //[Tooltip("For locking the camera position on all axis")]
+    //public bool LockCameraPosition = false;
 
     private const float _threshold = 0.01f;
 
-    private void LateUpdate()
-    {
-        CameraRotation();
-    }
+    //private void LateUpdate()
+    //{
+    //    CameraRotation();
+    //}
 
-    private void CameraRotation()
-    {
-        // if there is an input and camera position is not fixed
-        if (!LockCameraPosition)
-        {
-            //Don't multiply mouse input by Time.deltaTime;
-            float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
+    //private void CameraRotation()
+    //{
+    //    // if there is an input and camera position is not fixed
+    //    if (!LockCameraPosition)
+    //    {
+    //        //Don't multiply mouse input by Time.deltaTime;
+    //        float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
 
-            _cinemachineTargetYaw += deltaTimeMultiplier;
-            _cinemachineTargetPitch += deltaTimeMultiplier;
-        }
+    // _cinemachineTargetYaw += deltaTimeMultiplier; _cinemachineTargetPitch += deltaTimeMultiplier; }
 
-        // clamp our rotations so our values are limited 360 degrees
-        _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
-        _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
+    // // clamp our rotations so our values are limited 360 degrees _cinemachineTargetYaw =
+    // ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue); _cinemachineTargetPitch =
+    // ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
 
-        // Cinemachine will follow this target
-        CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride,
-            _cinemachineTargetYaw, 0.0f);
-    }
+    //    // Cinemachine will follow this target
+    //    CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride,
+    //        _cinemachineTargetYaw, 0.0f);
+    //}
 
     private void Move()
     {
         Vector3 moveDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
+        rb.angularDrag = angularDamping;
+
         Vector3 cameraForward = Camera.main.transform.forward;
         cameraForward.y = 0;
         cameraForward.Normalize();
@@ -254,9 +254,23 @@ public class PlayerMovement : MonoBehaviour
         if (desiredDirection != Vector3.zero && desiredDirection.magnitude > 0.1f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(desiredDirection.normalized, Vector3.up);
-            rb.MoveRotation(Quaternion.RotateTowards(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
+            Quaternion deltaRotation = targetRotation * Quaternion.Inverse(rb.rotation);
+
+            float angle;
+            Vector3 axis;
+            deltaRotation.ToAngleAxis(out angle, out axis);
+            if (angle > 180)
+            {
+                angle -= 360;
+            }
+
+            Vector3 torque = angle * axis * rotationSpeed;
+            rb.AddTorque(torque, ForceMode.VelocityChange);
         }
     }
+
+    [SerializeField]
+    private float angularDamping = 5.0f;
 
     private void RegenerateFuel()
     {
