@@ -241,31 +241,13 @@ public class PlayerMovement : MonoBehaviour
         cameraRight.Normalize();
 
         Vector3 desiredDirection = cameraForward * moveDirection.z + cameraRight * moveDirection.x;
-        Vector3 force = desiredDirection * moveSpeed;
-
-        // Calculate the force to be applied
-        Vector3 forceToApply = force - rb.velocity;
-        forceToApply.y = 0;
-
-        // Apply the force to the Rigidbody
-        rb.AddForce(forceToApply, ForceMode.VelocityChange);
+        rb.velocity = desiredDirection * moveSpeed;
 
         // Update the rotation
-        if (desiredDirection != Vector3.zero && desiredDirection.magnitude > 0.1f)
+        if (desiredDirection.magnitude > 0.1f)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(desiredDirection.normalized, Vector3.up);
-            Quaternion deltaRotation = targetRotation * Quaternion.Inverse(rb.rotation);
-
-            float angle;
-            Vector3 axis;
-            deltaRotation.ToAngleAxis(out angle, out axis);
-            if (angle > 180)
-            {
-                angle -= 360;
-            }
-
-            Vector3 torque = angle * axis * rotationSpeed;
-            rb.AddTorque(torque, ForceMode.VelocityChange);
+            var angle = Vector3.SignedAngle(rb.rotation * Vector3.forward, desiredDirection, Vector3.up) * Mathf.Deg2Rad / Time.deltaTime;
+            rb.angularVelocity = Vector3.up * angle;
         }
     }
 
